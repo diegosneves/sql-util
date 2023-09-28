@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Interface com implementacoes para utilizar o SQL como base de dados.<br>
@@ -50,6 +51,26 @@ public interface SqlRepository<T, K> extends Repository<T, K> {
     }
 
     @Override
+    default T update(T data) {
+        Session session = getConnection();
+        Transaction transaction = null;
+
+        try {
+            transaction = session.beginTransaction();
+            session.update(data);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            closeConnection(session);
+        }
+        return data;
+    }
+
+    @Override
     default void delete(T data) {
         Session session = getConnection();
         Transaction transaction = null;
@@ -79,6 +100,19 @@ public interface SqlRepository<T, K> extends Repository<T, K> {
             SqlRepository.closeConnection(session);
         }
         return obj;
+    }
+
+    @Override
+    default List<T> findAll() {
+        Session session = getConnection();
+        List<T> resultList;
+        try {
+            Query<T> query = session.createQuery("FROM " + this.getObjType().getSimpleName(), this.getObjType());
+            resultList = query.list();
+        } finally {
+            closeConnection(session);
+        }
+        return resultList;
     }
 
 }

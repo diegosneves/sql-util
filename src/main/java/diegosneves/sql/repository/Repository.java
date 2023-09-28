@@ -1,5 +1,7 @@
 package diegosneves.sql.repository;
 
+import java.util.List;
+
 /**
  * Interface padrao para implementacao basica de CRUD
  * @param <T> Entity/Document -  que será persistida.
@@ -30,5 +32,9 @@ public interface Repository<T, K> {
     T findById(K id);
 
     void delete(T data);
+
+    T update(T data);
+
+    List<T> findAll();
 
 }
